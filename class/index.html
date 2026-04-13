@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struct Generator • IDE Theme</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* VS Code / Visual Studio Style Palette */
+            --bg-main: #1e1e1e;
+            --bg-panel: #252526;
+            --bg-input: #3c3c3c;
+            --border: #333333;
+            
+            /* Syntax Highlighting */
+            --cpp-kw: #569cd6;      /* Keyword Blue */
+            --cpp-ty: #4ec9b0;      /* Type/Interface Teal */
+            --cpp-nm: #9cdcfe;      /* Variable Light Blue */
+            --cpp-cm: #6a9955;      /* Comment Green */
+            --cpp-num: #b5cea8;     /* Numbers Light Green */
+            --cpp-err: #f48771;     /* Error Red */
+            
+            --text-main: #d4d4d4;
+            --text-dim: #808080;
+            --accent: #007acc;      /* VS Blue */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 20px;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 10px;
+        }
+
+        header h1 {
+            font-size: 20px;
+            font-weight: 400;
+            color: #fff;
+        }
+
+        /* --- Panel Styles --- */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background: #2d2d2d;
+            padding: 8px 15px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- Struct Editor --- */
+        .struct-meta {
+            padding: 15px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+        }
+
+        #structName {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid transparent;
+            color: var(--cpp-ty);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            width: 200px;
+        }
+
+        #structName:focus { border-bottom-color: var(--accent); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { 
+            background: #252526; 
+            padding: 10px 15px; 
+            text-align: left; 
+            font-size: 11px; 
+            color: var(--text-dim);
+        }
+        
+        td { padding: 5px 15px; border-bottom: 1px solid #2d2d2d; }
+
+        input.cell, select.cell {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid transparent;
+            color: var(--text-main);
+            padding: 4px 8px;
+            border-radius: 2px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        input.cell:focus { border-color: var(--accent); outline: none; }
+        input.off { color: var(--cpp-num); }
+        input.nm { color: var(--cpp-nm); }
+        select.cell { color: var(--cpp-ty); cursor: pointer; }
+
+        .btn {
+            cursor: pointer;
+            padding: 6px 14px;
+            border: none;
+            background: var(--bg-input);
+            color: #fff;
+            font-size: 12px;
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background: #505050; }
+        .btn-primary { background: var(--accent); }
+        .btn-primary:hover { background: #1c97ea; }
+
+        /* --- Code Output --- */
+        pre {
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #d4d4d4;
+            background: #1e1e1e;
+            overflow: auto;
+            flex-grow: 1;
+            min-height: 500px;
+        }
+
+        .token-cm { color: var(--cpp-cm); }
+        .token-kw { color: var(--cpp-kw); }
+        .token-ty { color: var(--cpp-ty); }
+        .token-num { color: var(--cpp-num); }
+        .token-pad { color: #808080; }
+        .token-err { color: var(--cpp-err); text-decoration: underline wavy; }
+
+        .stats-bar {
+            padding: 10px 15px;
+            font-size: 12px;
+            background: #007acc;
+            color: #fff;
+        }
+
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>C++ Structure Tool</h1>
+    </header>
+
+    <section class="panel">
+        <div class="panel-header">
+            <span>Editor</span>
+            <span id="rowCount">0 rows</span>
+        </div>
+
+        <div class="struct-meta">
+            <span class="token-kw">struct</span>
+            <input id="structName" value="PlayerData" oninput="render()" spellcheck="false">
+            <span>{</span>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%">Offset</th>
+                    <th style="width: 35%">Type</th>
+                    <th style="width: 30%">Member Name</th>
+                    <th style="width: 10%"></th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+
+        <div style="padding: 15px; display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="addRow()">Add Member</button>
+            <button class="btn" onclick="clearAll()">Clear</button>
+        </div>
+
+        <div class="stats-bar" id="stats">
+            Ready
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <span>Output.hpp</span>
+            <button class="btn" id="copyBtn" onclick="copyCode()" style="height: 20px; padding: 0 10px; font-size: 10px;">Copy</button>
+        </div>
+        <pre id="outputCode"></pre>
+    </section>
+</div>
+
+<script>
+    const TYPE_DEFS = {
+        "Base Types": [
+            ["uint8_t", 1], ["uint16_t", 2], ["uint32_t", 4], ["uint64_t", 8],
+            ["int32_t", 4], ["bool", 1], ["float", 4], ["double", 8]
+        ],
+        "Pointers": [
+            ["void*", 8], ["uintptr_t", 8], ["char*", 8]
+        ],
+        "Common": [
+            ["Vector3", 12], ["Matrix4x4", 64], ["Quaternion", 16]
+        ]
+    };
+
+    let rowId = 0;
+
+    function createTypeOptions() {
+        return Object.entries(TYPE_DEFS).map(([group, types]) => `
+            <optgroup label="${group}">
+                ${types.map(([name, size]) => `<option value="${name}" data-size="${size}">${name}</option>`).join('')}
+            </optgroup>
+        `).join('');
+    }
+
+    function addRow(offset = '0x0', type = 'uint32_t', name = '') {
+        const id = `row-${rowId++}`;
+        const tr = document.createElement('tr');
+        tr.id = id;
+        tr.innerHTML = `
+            <td><input class="cell off" value="${offset}" oninput="render()" spellcheck="false"></td>
+            <td><select class="cell" onchange="render()">${createTypeOptions()}</select></td>
+            <td><input class="cell nm" value="${name}" oninput="render()" placeholder="m_field" spellcheck="false"></td>
+            <td style="text-align: right;"><button class="btn" style="background:transparent; color:var(--text-dim);" onclick="removeRow('${id}')">✕</button></td>
+        `;
+        document.getElementById('tbody').appendChild(tr);
+        if (type) tr.querySelector('select').value = type;
+        render();
+    }
+
+    function removeRow(id) {
+        document.getElementById(id).remove();
+        render();
+    }
+
+    function clearAll() {
+        document.getElementById('tbody').innerHTML = '';
+        render();
+    }
+
+    const toHex = (n) => `0x${n.toString(16).toUpperCase()}`;
+
+    function render() {
+        const structName = document.getElementById('structName').value || 'MyStruct';
+        const rows = Array.from(document.querySelectorAll('#tbody tr'));
+        const members = rows.map(r => {
+            const sel = r.querySelector('select');
+            return {
+                offset: parseInt(r.querySelector('.off').value, 16) || 0,
+                type: sel.value,
+                size: parseInt(sel.options[sel.selectedIndex].dataset.size),
+                name: r.querySelector('.nm').value || 'unnamed'
+            };
+        }).sort((a, b) => a.offset - b.offset);
+
+        let html = `<span class="token-cm">// Generated Header</span>\n`;
+        html += `<span class="token-kw">struct</span> <span class="token-ty">${structName}</span> {\n`;
+
+        let cursor = 0;
+        let padIdx = 0;
+
+        members.forEach(m => {
+            if (m.offset < cursor) {
+                html += `    <span class="token-err">// Error: Overlap at ${toHex(m.offset)}</span>\n`;
+            } else if (m.offset > cursor) {
+                const gap = m.offset - cursor;
+                html += `    <span class="token-ty">char</span> <span class="token-nm">pad_${String(padIdx++).padStart(4, '0')}</span>[<span class="token-num">${gap}</span>]; <span class="token-cm">// ${toHex(cursor)}</span>\n`;
+            }
+            html += `    <span class="token-ty">${m.type}</span> <span class="token-nm">${m.name}</span>; <span class="token-cm">// ${toHex(m.offset)}</span>\n`;
+            cursor = m.offset + m.size;
+        });
+
+        html += `};\n<span class="token-cm">// Total Size: ${toHex(cursor)}</span>`;
+        
+        document.getElementById('outputCode').innerHTML = html;
+        document.getElementById('rowCount').innerText = `${members.length} fields`;
+        document.getElementById('stats').innerText = `Status Bar: ${structName} | Size: ${toHex(cursor)}`;
+    }
+
+    async function copyCode() {
+        const text = document.getElementById('outputCode').innerText;
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('copyBtn');
+        btn.innerText = 'Copied';
+        setTimeout(() => btn.innerText = 'Copy', 1500);
+    }
+
+    // Initial state
+    addRow('0x0', 'void*', 'vtable');
+    addRow('0x8', 'float', 'm_health');
+    addRow('0xC', 'float', 'm_armor');
+</script>
+
+</body>
+</html>
